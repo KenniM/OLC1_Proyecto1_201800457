@@ -1,14 +1,6 @@
-# -*- coding: utf-8 -*-
-
-# Form implementation generated from reading ui file 'Ventana.ui'
-#
-# Created by: PyQt5 UI code generator 5.13.2
-#
-# WARNING! All changes made in this file will be lost!
-
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from PyQt5.QtWidgets import QMessageBox,QFileDialog
+import os.path
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -82,6 +74,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuAnalizar.menuAction())
 
         self.retranslateUi(MainWindow)
+        self.addActions()
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -96,6 +89,24 @@ class Ui_MainWindow(object):
         self.actionGuardar.setText(_translate("MainWindow", "Guardar"))
         self.actionGuardar_como.setText(_translate("MainWindow", "Guardar como..."))
         self.actionSalir.setText(_translate("MainWindow", "Salir"))
+    def addActions(self):
+        self.actionAbrir.triggered.connect(self.abrirArchivo)
+    def abrirArchivo(self):
+        try:
+                archivo=QFileDialog.getOpenFileName(None,'Abrir Archivo',None,"Archivos HTML, CSS o JavaScript (*.html *.css *.js)")
+                archivoAbierto=open(archivo[0],"r")
+                contenido=archivoAbierto.read()
+                archivoAbierto.close()
+                self.textEdit.setText(contenido)
+                nombre,extension=os.path.splitext(archivo[0])
+                if(extension==".html"): print("Se analizará un archivo HTML.")
+                elif (extension==".css"): print("Se analizará un archivo CSS.")
+                elif (extension==".js"): print("Se analizará un archivo JS.")
+                else: print("Se realizará un análisis sintáctico.")
+        except FileNotFoundError:
+                msgBox=QMessageBox()
+                msgBox.setText("No se ha seleccionado ningún archivo.")
+                msgBox.exec()
 
 
 if __name__ == "__main__":
