@@ -1,6 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMessageBox,QFileDialog
 import os.path
+import codecs
+import Lexico
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -10,13 +12,15 @@ class Ui_MainWindow(object):
 "}")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+        '''
         self.textEdit = QtWidgets.QTextEdit(self.centralwidget)
         self.textEdit.setGeometry(QtCore.QRect(40, 40, 861, 301))
         self.textEdit.setStyleSheet("*{\n"
 "background-color:white;\n"
 "color:black;\n"
-"}")
-        self.textEdit.setObjectName("textEdit")
+"}")'''
+        self.tipoArchivo=""'''
+        self.textEdit.setObjectName("textEdit")'''
         self.textEdit_2 = QtWidgets.QTextEdit(self.centralwidget)
         self.textEdit_2.setGeometry(QtCore.QRect(40, 390, 861, 161))
         self.textEdit_2.setMouseTracking(True)
@@ -31,6 +35,13 @@ class Ui_MainWindow(object):
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(40, 370, 61, 16))
         self.label_2.setObjectName("label_2")
+        self.plainTextEdit = QtWidgets.QPlainTextEdit(self.centralwidget)
+        self.plainTextEdit.setGeometry(QtCore.QRect(40, 40, 861, 321))
+        self.plainTextEdit.setStyleSheet("*{\n"
+"    background-color:white;\n"
+"    color:black\n"
+"}")
+        self.plainTextEdit.setObjectName("plainTextEdit")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 944, 21))
@@ -97,17 +108,28 @@ class Ui_MainWindow(object):
                 archivoAbierto=open(archivo[0],"r")
                 contenido=archivoAbierto.read()
                 archivoAbierto.close()
-                self.textEdit.setText(contenido)
+                self.plainTextEdit.setPlainText(str(contenido))
                 nombre,extension=os.path.splitext(archivo[0])
-                if(extension==".html"): print("Se analizará un archivo HTML.")
-                elif (extension==".css"): print("Se analizará un archivo CSS.")
-                elif (extension==".js"): print("Se analizará un archivo JS.")
-                else: print("Se realizará un análisis sintáctico.")
+                if(extension==".html"):
+                        print("Se analizará un archivo HTML.")
+                        self.tipoArchivo=extension
+                        self.analizar()
+                elif (extension==".css"):
+                        print("Se analizará un archivo CSS.")
+                        self.tipoArchivo=extension
+                elif (extension==".js"):
+                        print("Se analizará un archivo JS.")
+                        self.tipoArchivo=extension
+                else:
+                        print("Se realizará un análisis sintáctico.")
+                        self.tipoArchivo="rmt"
         except FileNotFoundError:
                 msgBox=QMessageBox()
                 msgBox.setText("No se ha seleccionado ningún archivo.")
                 msgBox.exec()
-
+    def analizar(self):
+            if self.tipoArchivo==".html": Lexico.lexHTML(self.plainTextEdit.toPlainText())
+            else: print("Todavía falta")
 
 if __name__ == "__main__":
     import sys
