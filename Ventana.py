@@ -105,7 +105,7 @@ class Ui_MainWindow(object):
     def abrirArchivo(self):
         try:
                 archivo=QFileDialog.getOpenFileName(None,'Abrir Archivo',None,"Archivos HTML, CSS o JavaScript (*.html *.css *.js)")
-                archivoAbierto=open(archivo[0],"r")
+                archivoAbierto=open(archivo[0],"r",encoding="utf-8")
                 contenido=archivoAbierto.read()
                 archivoAbierto.close()
                 self.plainTextEdit.setPlainText(str(contenido))
@@ -120,6 +120,7 @@ class Ui_MainWindow(object):
                 elif (extension==".js"):
                         print("Se analizará un archivo JS.")
                         self.tipoArchivo=extension
+                        self.analizar()
                 else:
                         print("Se realizará un análisis sintáctico.")
                         self.tipoArchivo="rmt"
@@ -129,7 +130,7 @@ class Ui_MainWindow(object):
                 msgBox.exec()
     def analizar(self):
             if self.tipoArchivo==".html": Lexico.lexHTML(self.plainTextEdit.toPlainText())
-            else: print("Todavía falta")
+            elif self.tipoArchivo==".js": Lexico.lexJS(self.plainTextEdit.toPlainText())
 
 if __name__ == "__main__":
     import sys
