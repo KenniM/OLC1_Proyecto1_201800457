@@ -26,36 +26,6 @@ def generarReporte(ruta,salida,errores):
     contenidoHTML+="</head> "+"\n"
     contenidoHTML+="<body style = 'background-color: #212121;"+"\n"
     contenidoHTML+="font-family: Microsoft Jhenghei UI; '> "+"\n"
-    contenidoHTML+="<h1 class='titulos'>LISTA DE TOKENS</h1> "+"\n"
-    contenidoHTML+="<center>"+"\n"
-    contenidoHTML+="<div class='contenedor'>"+"\n"
-    contenidoHTML+="<table class='Tabla'>"+"\n"
-    contenidoHTML+="<tr>"+"\n"
-    contenidoHTML+="<th class='encabezados'>#</th>"+"\n"
-    contenidoHTML+="<th class='encabezados'>Lexema</th>"+"\n"
-    contenidoHTML+="<th class='encabezados'>Fila</th>"+"\n"
-    contenidoHTML+="<th class='encabezados'>Columna</th>"+"\n"
-    contenidoHTML+="<th class='encabezados'>Token</th>"+"\n"
-    contenidoHTML+="</tr>"+"\n"
-    contenidoHTML+="<!-- FILAS -->"+"\n"
-    contadorTokens=1
-    for tokens in salida:
-        contenidoHTML+="<tr class='filas'>\n"
-        contenidoHTML+="<td class='filas'>"+str(contadorTokens)+"</td>\n"
-        if tokens.tipo.name=="COMENTARIO":
-            temp1=tokens.val.replace("<!--","")
-            temp2=temp1.replace("-->","")
-            contenidoHTML+="<td class='filas'>"+temp2+"</td>\n"
-        else:
-            contenidoHTML+="<td class='filas'>"+str(tokens.val)+"</td>\n"
-        contenidoHTML+="<td class='filas'>"+str(tokens.fila_)+"</td>\n"
-        contenidoHTML+="<td class='filas'>"+str(tokens.columna_)+"</td>\n"
-        contenidoHTML+="<td class='filas'>"+tokens.tipo.name+"</td>\n"
-        contenidoHTML+="</tr>\n"
-        contadorTokens+=1
-    contenidoHTML+="</table>\n"
-    contenidoHTML+="</div>\n"
-    contenidoHTML+="</center>\n"
     contenidoHTML+="<h1 class='titulos'>LISTA DE ERRORES</h1>\n"
     if len(errores)==0:
         contenidoHTML+="<h4 class='noErrores'>¡No se han detectado errores!</h4>\n"
@@ -1258,5 +1228,6 @@ def lexJS(entradaJS):
         print("Análisis finalizado")
         generarReporte("reporteJS.html",salida,errores)
         repararEntrada(entradaJS,rutaCorregida,errores,"nuevoJS.js")
+        os.startfile("imgAutomata.png")
 
 
