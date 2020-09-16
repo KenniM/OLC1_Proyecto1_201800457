@@ -1,9 +1,21 @@
 from PyQt5.QtWidgets import QMessageBox
 import Token
 import TokenJS
+import TokenCSS
 import Error
 import TipoToken
 import os
+def repararEntrada(entrada,ruta,errores,nombreArchivo):
+    ruta=ruta.strip()
+    for err in errores:
+        entrada=entrada.replace(err.val,"")
+    if not os.path.exists(ruta):
+        os.makedirs(ruta)
+    rutaCompleta=ruta+nombreArchivo
+    reporte=open(rutaCompleta,"w")
+    reporte.write(entrada)
+    reporte.close()
+    
 def generarReporte(ruta,salida,errores):
     contenidoHTML=""
     contenidoHTML+="<!DOCTYPE html>\n"
@@ -127,6 +139,8 @@ def generarReporte(ruta,salida,errores):
 
 def lexHTML(entradaHTML):
     entrada=entradaHTML
+    rutaCorregida=""
+    contadorComentarios=0
     print("Analizando el archivo HTML...")
     if(entradaHTML!=""):
         salida=[]
@@ -293,7 +307,7 @@ def lexHTML(entradaHTML):
                         auxiliar=""
                         caso=1
                     else:
-                        if auxiliar!="":
+                        if auxiliar!="" or auxiliar!=" ":
                             errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
                             auxiliar=""
                             caso=0
@@ -352,9 +366,10 @@ def lexHTML(entradaHTML):
                         auxiliar=""
                         caso=0
                     else:
-                        errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
-                        auxiliar=""
-                        caso=0
+                        if auxiliar!="" or auxiliar!="":
+                            errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
+                            auxiliar=""
+                            caso=0
                     indice-=1
                 elif entrada[indice]==" ":
                     if auxiliar.casefold()=="html".casefold():
@@ -462,10 +477,11 @@ def lexHTML(entradaHTML):
                         auxiliar=""
                         caso=1
                     else:
-                        errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
-                        caso=0
-                        auxiliar=""
-                        columna+=1
+                        if auxiliar!="" or auxiliar!=" ":
+                            errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
+                            caso=0
+                            auxiliar=""
+                            columna+=1
                 else:
                     auxiliar+=entrada[indice]
                     columna+=1
@@ -526,6 +542,14 @@ def lexHTML(entradaHTML):
             elif caso==55:
                 if entrada[indice]==">":
                     auxiliar+=entrada[indice]
+                    if contadorComentarios<1:
+                        ruta=auxiliar.split("PATHW:")
+                        if len(ruta)>1:
+                            ruta1=ruta[1].split("--")
+                            ruta2=ruta1[0]
+                            rutaCorregida=ruta2
+                            print("Se guardará en la ruta: "+rutaCorregida)
+                            contadorComentarios+=1
                     salida.append(Token.Token(TipoToken.TipoToken(32),auxiliar,filaTemporal,colTemporal))
                     columna+=1
                     auxiliar=""
@@ -559,6 +583,7 @@ def lexHTML(entradaHTML):
                     caso=0
             indice+=1
         generarReporte("reporteHTML.html",salida,errores)
+        repararEntrada(entradaHTML,rutaCorregida,errores,"nuevoHTML.html")
     else: 
         msgBox=QMessageBox()
         msgBox.setText("El archivo abierto se encuentra vacío.")
@@ -567,10 +592,260 @@ def lexHTML(entradaHTML):
 
 def lexCSS(entradaCSS):
     print("Analizando el archivo CSS...")
-    entrada=entradaCSS          
+    entrada=entradaCSS
+    rutaCorregida=""
+    contadorComentarios=0
+    bitacora="---- BITACORA DEL RECORRIDO DE ANALISIS LEXICO DE ARCHIVOS CSS ----\n"
+    if(entrada!=""):
+        salida=[]
+        errores=[]
+        fila=1
+        columna=1
+        caso=0
+        indice=0
+        auxiliar=""
+        colTemporal=0
+        filaTemporal=0
+        dentroDeLlaves=False
+        esIdentificador=False
+        while indice<len(entrada):
+            if caso==0:
+                if entrada[indice]==" " or entrada[indice]==";" or entrada[indice]==":" or entrada[indice]=="-" or entrada[indice]=="." or entrada[indice]=="%" or entrada[indice]=="#" or entrada[indice]=="{" or entrada[indice]=="(" or entrada[indice]==",":
+                    #bitacora+="Analizando: \""+entrada[indice]+"\" en el estado: "+str(caso)+".\n Lexema actual: \""+auxiliar+"\".\n"
+                    if auxiliar.isalnum():
+                        if auxiliar.isidentifier():
+                            if dentroDeLlaves==False:
+                                if esIdentificador==False:
+                                    salida.append(Token.Token(TokenCSS.TokenCSS(2),auxiliar,fila,columna))
+                                    auxiliar=""
+                                    caso=0
+                                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                                else:
+                                    salida.append(Token.Token(TokenCSS.TokenCSS(7),auxiliar,fila,columna))
+                                    auxiliar=""
+                                    caso=0
+                                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                            else:
+                                if esIdentificador==False:
+                                    salida.append(Token.Token(TokenCSS.TokenCSS(8),auxiliar,fila,columna))
+                                    auxiliar=""
+                                    caso=0
+                                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                                else:
+                                    salida.append(Token.Token(TokenCSS.TokenCSS(7),auxiliar,fila,columna))
+                                    auxiliar=""
+                                    caso=0
+                                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                        else:
+                            if auxiliar.isnumeric():
+                                salida.append(Token.Token(TokenCSS.TokenCSS(9),auxiliar,fila,columna))
+                                auxiliar=""
+                                caso=0
+                                bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                            else:
+                                salida.append(Token.Token(TokenCSS.TokenCSS(15),auxiliar,fila,columna))
+                                auxiliar=""
+                                caso=0
+                                bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif auxiliar.isnumeric():
+                        salida.append(Token.Token(TokenCSS.TokenCSS(9),auxiliar,fila,columna))
+                        auxiliar=""
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    if entrada[indice]==":":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(5),":",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    if entrada[indice]==",":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(19),",",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]=="-":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(10),"-",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]==".":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(16),".",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]==";":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(6),";",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]=="%":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(13),"%",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]=="#":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(12),"#",fila,columna))
+                        esIdentificador=True
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]=="{":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(3),"{",fila,columna))
+                        dentroDeLlaves=True
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    elif entrada[indice]=="(":
+                        salida.append(Token.Token(TokenCSS.TokenCSS(17),"(",fila,columna))
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                    else:
+                        if auxiliar!=" " and auxiliar!="":
+                            errores.append(Error.Error(TokenCSS.TokenCSS(100),auxiliar,fila,columna))
+                            auxiliar=""
+                            caso=0
+                            bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                elif entrada[indice]=="}":
+                    salida.append(Token.Token(TokenCSS.TokenCSS(4),"}",fila,columna))
+                    auxiliar=""
+                    columna+=1
+                    caso=0
+                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                elif entrada[indice]==")":
+                    salida.append(Token.Token(TokenCSS.TokenCSS(18),")",fila,columna))
+                    auxiliar=""
+                    columna+=1
+                    caso=0
+                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                elif entrada[indice]=="/":
+                    auxiliar+=entrada[indice]
+                    caso=1
+                    bitacora+="Dirigiéndose al estado: "+str(caso)+" por el lexema: \""+entrada[indice]+"\".\n"
+                elif entrada[indice]=="\"":
+                    if auxiliar!=" " and auxiliar!="":
+                        errores.append(Error.Error(TokenCSS.TokenCSS(100),auxiliar,fila,columna))
+                        auxiliar=""
+                    caso=4
+                    bitacora+="Dirigiéndose al estado: "+str(caso)+" por el lexema: \""+entrada[indice]+"\".\n"
+                    auxiliar=entrada[indice]
+                elif entrada[indice]==" " or entrada[indice]=="\t":
+                    columna+=1
+                elif entrada[indice]=="\n" or entrada[indice]=="\r":
+                    fila+=1
+                    columna=1
+                else:
+                    auxiliar+=entrada[indice]
+            elif caso==1:
+                bitacora+="Analizando: \""+entrada[indice]+"\" en el estado: "+str(caso)+".\n Lexema actual: \""+auxiliar+"\".\n"
+                if entrada[indice]=="*":
+                    colTemporal=columna-1
+                    filaTemporal=fila
+                    auxiliar+=entrada[indice]
+                    caso=2
+                    columna+=1
+                else:
+                    errores.append(Token.Token(TokenCSS.TokenCSS(100),auxiliar,fila,columna))
+                    auxiliar=""
+                    columna+=1
+                    caso=0
+                    bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+            elif caso==2:
+                bitacora+="Analizando: \""+entrada[indice]+"\" en el estado: "+str(caso)+".\n Lexema actual: \""+auxiliar+"\".\n"
+                if indice!=len(entrada)-1:
+                    if entrada[indice]!="*":
+                        auxiliar+=entrada[indice]
+                        if entrada[indice]=="\n":
+                            fila+=1
+                            columna=1
+                        else: columna+=1
+                    else:
+                        auxiliar+=entrada[indice]
+                        columna+=1
+                        caso=3
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+" por el lexema: \""+entrada[indice]+"\".\n"
+                else:
+                    errores.append(Token.Token(TokenCSS.TokenCSS(99),auxiliar,fila,columna))
+                    auxiliar=""
+                    break
+            elif caso==3:
+                bitacora+="Analizando: \""+entrada[indice]+"\" en el estado: "+str(caso)+".\n Lexema actual: \""+auxiliar+"\".\n"
+                if entrada[indice]=="*":
+                    if entrada[indice+1]=="/":
+                        auxiliar+=entrada[indice+1]
+                        salida.append(Token.Token(TokenCSS.TokenCSS(1),auxiliar,filaTemporal,colTemporal))
+                        auxiliar=""
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                        columna+=1
+                    else:
+                        auxiliar+=entrada[indice+1]
+                        if entrada[indice]=="\n":
+                            fila+=1
+                            columna=1
+                        else:
+                            columna+=1
+                        caso=2
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+" por el lexema: \""+entrada[indice]+"\".\n"
+                elif entrada[indice]=="/":
+                        auxiliar+=entrada[indice]
+                        if contadorComentarios<1:
+                            ruta=auxiliar.split("PATHW:")
+                            print(ruta)
+                            if len(ruta)>1:
+                                ruta1=ruta[1].split("*")
+                                print(ruta1)
+                                ruta2=ruta1[0]
+                                print(ruta2)
+                                rutaCorregida=ruta2
+                                print("Se guardará en la ruta: "+rutaCorregida)
+                                contadorComentarios+=1
+                        salida.append(Token.Token(TokenCSS.TokenCSS(1),auxiliar,filaTemporal,colTemporal))
+                        auxiliar=""
+                        caso=0
+                        bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                        columna+=1
+                else:
+                    auxiliar+=entrada[indice+1]
+                    if entrada[indice]=="\n":
+                        fila+=1
+                        columna=1
+                    else:
+                        columna+=1
+                    caso=2
+                    bitacora+="Dirigiéndose al estado: "+str(caso)+" por el lexema: \""+entrada[indice]+"\".\n"
+            elif caso==4:
+                colTemporal=columna
+                filaTemporal=fila
+                while entrada[indice]!="\"" and indice<len(entrada):
+                    bitacora+="Analizando: \""+entrada[indice]+"\" en el estado: "+str(caso)+".\n Lexema actual: \""+auxiliar+"\".\n"
+                    auxiliar+=entrada[indice]
+                    if entrada[indice]=="\n":
+                        fila+=1
+                        columna=1
+                    else: columna+=1
+                    indice+=1
+                auxiliar+="\""
+                salida.append(Token.Token(TokenCSS.TokenCSS(14),auxiliar,filaTemporal,colTemporal))
+                auxiliar=""
+                caso=0
+                bitacora+="Dirigiéndose al estado: "+str(caso)+".\n"
+                columna+=1
+            indice+=1
+        print("Análisis finalizado")
+        bitacora+="------------------------- ANÁLISIS LÉXICO FINALIZADO ----------------------\n"
+        bitacora+="                 -------  LISTA DE TOKENS RECONOCIDOS --------             \n"
+        for tokenV in salida:
+            bitacora+="LEXEMA: \" "+tokenV.val+" \" FILA: "+str(tokenV.fila_)+" COLUMNA: "+str(tokenV.columna_)+" TOKEN: "+tokenV.tipo.name+"\n"
+        if len(errores)==0:
+            bitacora+="            -------  NO SE HAN ENCONTRADO ERRORES --------             \n"
+        else:
+            bitacora+="               -------  SE HAN ENCONTRADO ERRORES --------             \n"
+            for err in errores:
+                bitacora+="LEXEMA: \" "+err.val+" \" FILA: "+str(err.fila_)+" COLUMNA: "+str(err.columna_)+" TOKEN: "+err.tipo.name+"\n"
+        generarReporte("reporteCSS.html",salida,errores)
+        repararEntrada(entradaCSS,rutaCorregida,errores,"nuevoCSS.css")
+    else: 
+        msgBox=QMessageBox()
+        msgBox.setText("El archivo abierto se encuentra vacío.")
+        bitacora+="El archivo abierto se encuentra vacío."
+        msgBox.exec()
+    return bitacora         
 def lexJS(entradaJS):
     print("Analizando el archivo JavaScript...")
     entrada=entradaJS
+    rutaCorregida=""
+    contadorComentarios=0
     if(entrada!=""):
         salida=[]
         errores=[]
@@ -848,6 +1123,12 @@ def lexJS(entradaJS):
                         indice+=1
                     fila+=1
                     columna=1
+                    if contadorComentarios<1:
+                            ruta=auxiliar.split("PATHW:")
+                            if len(ruta)>1:
+                                rutaCorregida=ruta[1]
+                                print("Se guardará en la ruta: "+rutaCorregida)
+                                contadorComentarios+=1
                     salida.append(Token.Token(TokenJS.TokenJS(49),auxiliar,filaTemporal,colTemporal))
                 else:
                     salida.append(Token.Token(TokenJS.TokenJS(8),"/",fila,columna))
@@ -976,5 +1257,6 @@ def lexJS(entradaJS):
             indice+=1
         print("Análisis finalizado")
         generarReporte("reporteJS.html",salida,errores)
+        repararEntrada(entradaJS,rutaCorregida,errores,"nuevoJS.js")
 
 

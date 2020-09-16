@@ -117,6 +117,7 @@ class Ui_MainWindow(object):
                 elif (extension==".css"):
                         print("Se analizará un archivo CSS.")
                         self.tipoArchivo=extension
+                        self.analizar()
                 elif (extension==".js"):
                         print("Se analizará un archivo JS.")
                         self.tipoArchivo=extension
@@ -131,6 +132,7 @@ class Ui_MainWindow(object):
     def analizar(self):
             if self.tipoArchivo==".html": Lexico.lexHTML(self.plainTextEdit.toPlainText())
             elif self.tipoArchivo==".js": Lexico.lexJS(self.plainTextEdit.toPlainText())
+            elif self.tipoArchivo==".css": self.textEdit_2.setText(Lexico.lexCSS(self.plainTextEdit.toPlainText()))
 
 if __name__ == "__main__":
     import sys
