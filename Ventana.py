@@ -160,7 +160,7 @@ class Ui_MainWindow(object):
     def guardar(self):
             if self.tipoArchivo!="":
                 if self.rutaArchivo!="":
-                        aGuardar=open(self.rutaArchivo,"w",encoding='utf-8')
+                        aGuardar=open(self.rutaArchivo,"w")
                         aGuardar.write(self.plainTextEdit.toPlainText())
                         aGuardar.close()
                         msgBox=QMessageBox()
@@ -176,7 +176,7 @@ class Ui_MainWindow(object):
             try:
                 if self.tipoArchivo!="":
                         nuevoArchivo = QtWidgets.QFileDialog.getSaveFileName(None, 'Guardar como...',None,"Archivos HTML, CSS, JavaScript o RMT (*"+self.tipoArchivo+")")
-                        file = open(nuevoArchivo[0], 'w',encoding='utf-8')
+                        file = open(nuevoArchivo[0], 'w')
                         file.write(self.plainTextEdit.toPlainText())
                         file.close()
                         self.rutaArchivo=nuevoArchivo[0]
@@ -193,7 +193,7 @@ class Ui_MainWindow(object):
                 archivo=QFileDialog.getOpenFileName(None,'Abrir Archivo',None,"Archivos HTML, CSS, JavaScript o RMT (*.html *.css *.js *.rmt)")
                 print("Cargando el archivo ubicado en:"+archivo[0])
                 self.rutaArchivo=archivo[0]
-                archivoAbierto=open(archivo[0],"r",encoding="utf-8")
+                archivoAbierto=open(archivo[0],"r")
                 contenido=archivoAbierto.read()
                 archivoAbierto.close()
                 self.plainTextEdit.setPlainText(str(contenido))

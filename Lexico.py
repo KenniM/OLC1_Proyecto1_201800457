@@ -49,6 +49,7 @@ def generarReporte(ruta,salida,errores):
             contenidoHTML+="<td class='filas'>" + str(error.fila_) + "</td>\n"
             contenidoHTML+="<td class='filas'>" + str(error.columna_) + "</td>\n"
             contenidoHTML+="<td class='filas'>" + str(error.val) + "</td>\n"
+            print(str(error.val))
             contenidoHTML+="<td class='filas'>" + error.tipo.name + "</td>\n"
             contenidoHTML+="</tr>\n"
             contadorTokens+=1
@@ -277,7 +278,7 @@ def lexHTML(entradaHTML):
                         auxiliar=""
                         caso=1
                     else:
-                        if auxiliar!="" or auxiliar!=" ":
+                        if auxiliar!="" or auxiliar!=" " or auxiliar!="\t" or auxiliar!="\n":
                             errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
                             auxiliar=""
                             caso=0
@@ -336,7 +337,7 @@ def lexHTML(entradaHTML):
                         auxiliar=""
                         caso=0
                     else:
-                        if auxiliar!="" or auxiliar!="":
+                        if auxiliar!="" or auxiliar!=" " or auxiliar!="\t" or auxiliar!="\n":
                             errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
                             auxiliar=""
                             caso=0
@@ -447,7 +448,7 @@ def lexHTML(entradaHTML):
                         auxiliar=""
                         caso=1
                     else:
-                        if auxiliar!="" or auxiliar!=" ":
+                        if auxiliar!="" or auxiliar!=" " or auxiliar!="\t" or auxiliar!="\n":
                             errores.append(Error.Error(TipoToken.TipoToken(100),auxiliar,fila,columna))
                             caso=0
                             auxiliar=""
