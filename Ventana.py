@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QMessageBox,QFileDialog
 import os.path
 import codecs
 import Lexico
-
+import Sintax
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -104,7 +104,7 @@ class Ui_MainWindow(object):
         self.actionAbrir.triggered.connect(self.abrirArchivo)
     def abrirArchivo(self):
         try:
-                archivo=QFileDialog.getOpenFileName(None,'Abrir Archivo',None,"Archivos HTML, CSS o JavaScript (*.html *.css *.js)")
+                archivo=QFileDialog.getOpenFileName(None,'Abrir Archivo',None,"Archivos HTML, CSS, JavaScript o RMT (*.html *.css *.js *.rmt)")
                 archivoAbierto=open(archivo[0],"r",encoding="utf-8")
                 contenido=archivoAbierto.read()
                 archivoAbierto.close()
@@ -122,9 +122,15 @@ class Ui_MainWindow(object):
                         print("Se analizará un archivo JS.")
                         self.tipoArchivo=extension
                         self.analizar()
-                else:
+                elif (extension==".rmt"):
                         print("Se realizará un análisis sintáctico.")
-                        self.tipoArchivo="rmt"
+                        self.tipoArchivo=extension
+                        self.analizar()
+                else:
+                        self.plainTextEdit.setPlainText("")
+                        msgBoxE=QMessageBox()
+                        msgBoxE.setText("El formato del archivo abierto no está soportado.")
+                        msgBoxE.exec()
         except FileNotFoundError:
                 msgBox=QMessageBox()
                 msgBox.setText("No se ha seleccionado ningún archivo.")
@@ -133,6 +139,7 @@ class Ui_MainWindow(object):
             if self.tipoArchivo==".html": Lexico.lexHTML(self.plainTextEdit.toPlainText())
             elif self.tipoArchivo==".js": Lexico.lexJS(self.plainTextEdit.toPlainText())
             elif self.tipoArchivo==".css": self.textEdit_2.setText(Lexico.lexCSS(self.plainTextEdit.toPlainText()))
+            elif self.tipoArchivo==".rmt":self.textEdit_2.setText(Sintax.sintaxParentesis(self.plainTextEdit.toPlainText()))
 
 if __name__ == "__main__":
     import sys
